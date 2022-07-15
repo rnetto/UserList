@@ -7,22 +7,49 @@ using Microsoft.EntityFrameworkCore;
 using UserList.Data;
 using UserList.Models;
 using UserList.Models.DTOs;
+using UserList.Service;
 
 namespace UserList.Controllers
 {
     public class UsuariosController : Controller
     {
         private readonly UserListContext _context;
+        private readonly UsuariosService _usuarioService;
+
 
         public UsuariosController(UserListContext context)
         {
             _context = context;
+            _usuarioService = new UsuariosService(_context);
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            return View(await _context.Usuario.ToListAsync());
+            return View();
         }
+
+        [HttpGet]
+        //[Route("usuarios/Filtrar")]        
+        //[Route("usuarios/{skip}/{take}")]        
+        public async Task<IActionResult> Filtrar(UsuarioDTO usuarioDTO, int skip = 0, int take = 10)
+        {
+            try
+            {
+                take = take > 30 ? take = 30 : take;
+                usuarioDTO.Nome = "";
+
+                var listaUsuario = await _usuarioService.GetAsync(usuarioDTO, skip, take);
+
+                return View("_ListUserPartial", listaUsuario);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex);
+            }
+
+        }
+
+
 
         public async Task<IActionResult> Detalhes(int? id)
         {

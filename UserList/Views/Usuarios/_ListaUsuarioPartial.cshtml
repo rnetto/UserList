@@ -1,36 +1,57 @@
-﻿@model IEnumerable<UserList.Models.DTOs.UsuarioDTO>
+﻿@using UserList.Models.DTOs
+@model UsuarioListaDTO
 
-<div class="row">
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Nome</th>
-                <th>Apelido</th>
-                <th>Endereco Completo</th>
-                <th>Telefone</th>
-                <th>Data de Cadastro</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Cadastar Usuário";
+}
+
+<div style="margin-top:5px">
+    <fieldset>
+        <div class="row">
+            <table class="table table-striped" id="usLis">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Nome</th>
+                        <th>Apelido</th>
+                        <th>Endereco Completo</th>
+                        <th>Telefone</th>
+                        <th>Data de Cadastro</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ListaUsuarios)
+                    {
+                        <tr>
+                            <td><input type="radio" id="rButton" name="fav_language" value=@item.Id></td>
+                            <td>@item.Nome</td>
+                            <td>@item.Apelido</td>
+                            <td>@item.Endereco</td>
+                            <td>@item.Telefone</td>
+                            <td>@item.DataCadastro.ToShortDateString()</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <div class="form-group">
+                <button class="btn btn-outline-info" id="detal" onclick=Detalhar()>DETALHAR</button>
+                <button class="btn btn-outline-success" id="edit" onclick=Editar()>EDITAR</button>
+                <button class="btn btn-outline-danger" id="del" onclick=Deletar()>DELETAR</button>
+            </div>
+            @if (Model.TotalPaginas > 1)
             {
-                <tr>
-                    <td>@item.Nome</td>
-                    <td>@item.Apelido</td>
-                    <td>@item.Endereco</td>
-                    <td>@item.Telefone</td>
-                    <td>@item.DataCadastro.ToShortDateString()</td>
-                    <td><input type="radio" id="rButton" name="fav_language" value=@item.Id></td>
-                </tr>
+                <div style="float:right; display:flex;">
+                    @if (Model.PagAtual > 2)
+                    {
+                        <a style="cursor:pointer;" onclick="Filtrar(@Model.PagAtual-1)"> anterior</a>
+                    }
+                    <a style="cursor:pointer;" onclick="Filtrar(@Model.PagAtual+1)"> próxima</a>
+                </div>
             }
-        </tbody>
-    </table>
-    <div class="form-group">
-        <button class="btn btn-outline-info" id="detal" onclick=Detalhar()>DETALHAR</button>
-        <button class="btn btn-outline-success" id="edit" onclick=Editar()>EDITAR</button>
-        <button class="btn btn-outline-danger" id="del" onclick=Deletar()>DELETAR</button>
-    </div>
+
+        </div>
+    </fieldset>
 </div>
 
 <script>
@@ -38,17 +59,18 @@
     function Editar() {
         let id = $("#rButton").val();
         console.log(id);
+
         if (id > 0) {
            $.ajax({
                 url: '@Url.Action("Editar","Usuarios")',
                 type: 'GET',
                 data: { "Id": id },
                success: function () {
-                   
-                },
+
+               },
                error: function (response) {
                    Notify('erro', response.statusText);
-                }
+               }
             });
         }
         else
