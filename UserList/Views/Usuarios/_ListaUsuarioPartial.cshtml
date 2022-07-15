@@ -1,0 +1,98 @@
+﻿@model IEnumerable<UserList.Models.DTOs.UsuarioDTO>
+
+<div class="row">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Apelido</th>
+                <th>Endereco Completo</th>
+                <th>Telefone</th>
+                <th>Data de Cadastro</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Nome</td>
+                    <td>@item.Apelido</td>
+                    <td>@item.Endereco</td>
+                    <td>@item.Telefone</td>
+                    <td>@item.DataCadastro.ToShortDateString()</td>
+                    <td><input type="radio" id="rButton" name="fav_language" value=@item.Id></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="form-group">
+        <button class="btn btn-outline-info" id="detal" onclick=Detalhar()>DETALHAR</button>
+        <button class="btn btn-outline-success" id="edit" onclick=Editar()>EDITAR</button>
+        <button class="btn btn-outline-danger" id="del" onclick=Deletar()>DELETAR</button>
+    </div>
+</div>
+
+<script>
+
+    function Editar() {
+        let id = $("#rButton").val();
+        console.log(id);
+        if (id > 0) {
+           $.ajax({
+                url: '@Url.Action("Editar","Usuarios")',
+                type: 'GET',
+                data: { "Id": id },
+               success: function () {
+                   
+                },
+               error: function (response) {
+                   Notify('erro', response.statusText);
+                }
+            });
+        }
+        else
+            Notify('atencao', 'Selecione um usuário para editar.');
+    }
+
+    function Detalhar() {
+        let id = $("#rButton").val();
+            console.log(id);
+        if (id > 0) {
+            $.ajax({
+                url: '@Url.Action("Detalhes", "Usuarios")',
+                type: 'GET',
+                data: { "Id": id },
+                success: function () {
+
+                },
+                error: function (response) {
+                    Notify('erro', response.statusText);
+                }
+            });
+        }
+        else
+            Notify('atencao', 'Selecione um usuário para ver detalhes.');
+    }
+
+    function Deletar() {
+        let id = $("#rButton").val();
+        console.log(id);
+        if (id > 0) {
+            $.ajax({
+                url: '@Url.Action("Detalhes", "Usuarios")',
+                type: 'POST',
+                data: { "Id": id },
+                success: function () {
+                    Notify('sucesso', 'Alteração realizada!')
+                },
+                error: function () {
+                    Notify('erro', response.statusText);
+                }
+            });
+        }
+        else
+            Notify('atencao', 'Selecione um usuário para apagar');
+    }
+
+</script>
