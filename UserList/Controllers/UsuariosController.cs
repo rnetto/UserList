@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UserList.Data;
-using UserList.Models;
 using UserList.Models.DTOs;
 using UserList.Service;
 
@@ -29,43 +27,26 @@ namespace UserList.Controllers
         }
 
         [HttpGet]
-        //[Route("usuarios/Filtrar")]        
-        //[Route("usuarios/{skip}/{take}")]        
         public async Task<IActionResult> Filtrar(UsuarioDTO usuarioDTO, int skip = 0, int take = 10)
         {
             try
             {
                 take = take > 30 ? take = 30 : take;
-                usuarioDTO.Nome = "";
 
-                var listaUsuario = await _usuarioService.GetAsync(usuarioDTO, skip, take);
+                usuarioDTO.Nome = usuarioDTO.Nome == null ? usuarioDTO.Nome = "" : usuarioDTO.Nome;
+                usuarioDTO.Apelido = usuarioDTO.Apelido == null ? usuarioDTO.Apelido = "" : usuarioDTO.Apelido;
+                usuarioDTO.Telefone = usuarioDTO.Telefone == null ? usuarioDTO.Telefone = "" : usuarioDTO.Telefone;
+                usuarioDTO.Endereco = usuarioDTO.Endereco == null ? usuarioDTO.Endereco = "" : usuarioDTO.Endereco;
 
-                return View("_ListUserPartial", listaUsuario);
+                var listaUsuario = await _usuarioService.BuscarLista(usuarioDTO, skip, take);
+
+                return View("_ListaUsuarioPartial", listaUsuario);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex);
             }
 
-        }
-
-
-
-        public async Task<IActionResult> Detalhes(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var usuario = await _context.Usuario
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (usuario == null)
-            {
-                return NotFound();
-            }
-
-            return View(usuario);
         }
 
         public IActionResult CriarNovoUsuario()
@@ -76,61 +57,51 @@ namespace UserList.Controllers
         [HttpPost]
         public async Task<IActionResult> SalvarCadastro(UsuarioDTO usuario)
         {
-            if (ModelState.IsValid)
+            try
             {
-                _context.Add(usuario);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                if (usuario.Nome.Any())
+                    throw new Exception("Campo <strong>NOME</strong> não pode ser vazio.");
+                if (usuario.Telefone.Any())
+                    throw new Exception("Campo <strong>TELEFONE</strong> não pode ser vazio.");
+
+                if(usuario.Id.HasValue)
+                    await _usuarioService.Atualizar(usuario);
+                else
+                    await _usuarioService.Adicionar(usuario);
+                 
+                return Ok();
             }
-            return View(usuario);
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
 
+        [HttpGet]
         public async Task<IActionResult> Editar(int? id)
         {
-            if (id == null)
+            try
             {
-                return NotFound();
-            }
-
-            var usuario = await _context.Usuario.FindAsync(id);
-            if (usuario == null)
-            {
-                return NotFound();
-            }
-            return View(usuario);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Edit(int id, Usuario usuario)
-        {
-            if (id != usuario.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
+                if (id == null)
                 {
-                    _context.Update(usuario);
-                    await _context.SaveChangesAsync();
+                    throw new Exception("Informe um <strong>ID</strong> válido!");
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!UsuarioExists(usuario.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(usuario);
-        }
 
+                var usuario = await _usuarioService.BuscaUsuario(id);
+
+                if (usuario == null)
+                {
+                    throw new Exception("Usuário não existe.");
+                }
+
+                return View("_CriarNovoUsuarioPartial", usuario);
+            }
+            catch(Exception ex)
+            {
+                return NotFound(ex);
+            }
+        }
+        [HttpDelete]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -148,18 +119,5 @@ namespace UserList.Controllers
             return View(usuario);
         }
 
-        [HttpPost, ActionName("Delete")]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var usuario = await _context.Usuario.FindAsync(id);
-            _context.Usuario.Remove(usuario);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool UsuarioExists(int id)
-        {
-            return _context.Usuario.Any(e => e.Id == id);
-        }
     }
 }

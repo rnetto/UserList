@@ -1,4 +1,6 @@
-﻿@{
+﻿@using UserList.Models.DTOs;
+@model UsuarioDTO
+@{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Cadastar Usuário";
 }
@@ -18,19 +20,19 @@
             <div class="col-md-4">
                 <div class="form-group">
                     <label class="control-label">Nome Completo</label>
-                    <input class="form-control" id="nomeCompleto" required size="50" placeholder="Obrigatório" />
+                    <input class="form-control" id="nomeCompleto" required size="50" placeholder="obrigatório" value=@Model.Nome/>
                 </div>
                 <div class="form-group">
                     <label class="control-label">Apelido</label>
-                    <input class="form-control" id="apelido" size="50" />
+                    <input class="form-control" id="apelido" size="50"  value=@Model.Apelido/>
                 </div>
                 <div class="form-group">
                     <label class="control-label">Endereço</label>
-                    <input class="form-control" id="endereco" size="50" />
+                    <input class="form-control" id="endereco" size="50"  value=@Model.Endereco/>
                 </div>
                 <div class="form-group">
                     <label class="control-label">Telefone</label>
-                    <input class="form-control" id="telefone" type="tel" placeholder="(xx) x xxxx-xxxx" size="11" required />
+                    <input class="form-control" id="telefone" type="tel" placeholder="(xx)xxxx-xxxx" size="15" required  value=@Model.Telefone/>
                 </div>
                 <div class="form-group">
                     <button class="btn btn-success" onclick=ValidaCampos()>SALVAR CADASTRO</button>
@@ -54,12 +56,12 @@
 
         if (nome.length < 5) {
             document.getElementById("nomeCompleto").focus();
-            Notify('alerta', "Preencha o campo 'NOME' corretamente");
+            Notify('alerta', "Preencha o campo <strong>NOME</strong> corretamente");
             return;
         }
         else if (telefone.length < 10) {
             document.getElementById("telefone").focus();
-            alert("Preencha o campo 'TELEFONE' corretamente");
+            Notify('alerta', "Preencha o campo <strong>TELEFONE</strong> corretamente");
             return;
         }
 
@@ -71,19 +73,29 @@
         $.ajax({
             url:'@Url.Action("SalvarCadastro","Usuarios")',
             type:'POST',
-            data:{
+            data: {
+                "Id": @Model.Id,
                 "Nome": nome,
                 "Apelido": apelido,
                 "Endereco": endereco,
-                "Telefone": telefone
+                "Telefone": telefone,
+                "DataCadastro":@Model.DataCadastro
             },
             success: function () {
+                limpaCampos();
                 Notify('sucesso', 'Cadastro realizado!');
             },
             error: function (response) {
                 Notify('erro', response.statusText);
             }
         });
+    }
+
+    function limpaCampos() {
+        $("#nomeCompleto").val() = "";
+        $("#apelido").val() = "";
+        $("#endereco").val() = "";
+        $("#telefone").val() = "";
     }
 
 </script>

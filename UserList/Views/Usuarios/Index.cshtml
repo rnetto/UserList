@@ -70,9 +70,30 @@
 <div id="listUser"></div>
 
 <script>
-            
-    function Filtrar() {
 
+    function Filtrar(skp, tak) {
+
+        $.ajax({
+            url:'@Url.Action("Filtrar","Usuarios")',
+            type:'GET',
+            data:{
+                "Nome": nome,
+                "Apelido": apelido,
+                "Endereco": endereco,
+                "Telefone": telefone,
+                "DtInicioF": dtInicioF,
+                "DtFimF": dtFimF,
+                "skip": skp,
+                "take": Take
+            },
+            success: function (response) {
+                Notify('sucesso', 'Exibindo resultados...');
+
+            },
+            error: function (response) {
+                Notify('erro', response.statusText);
+            }
+        });
     }
 
 </script>
