@@ -109,17 +109,28 @@ namespace UserList.Service
             return retorno;
         }
 
+        internal bool Existe(int id)
+        {
+            var usuario = _context.Usuario.FirstOrDefault(x => x.Id == id);
+
+            if (usuario == null)
+                return false;
+            else
+                return true;
+        }
+
         internal async Task<UsuarioDTO> BuscaUsuario(int? id)
         {
             var usuario = await _context.Usuario.FirstOrDefaultAsync(x => x.Id == id);
 
             var user = new UsuarioDTO()
             {
+                Id = usuario.Id,
                 Nome = usuario.Nome,
                 Apelido = usuario.Apelido,
                 Endereco = usuario.Endereco,
                 Telefone = usuario.Telefone,
-                DataCadastro = (DateTime)usuario.DataCadastro
+                DataCadastro = usuario.DataCadastro
             };
 
             return user;

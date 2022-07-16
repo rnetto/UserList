@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UserList.Data;
+using UserList.Models;
 using UserList.Models.DTOs;
 using UserList.Service;
 
@@ -40,18 +42,19 @@ namespace UserList.Controllers
 
                 var listaUsuario = await _usuarioService.BuscarLista(usuarioDTO, skip, take);
 
-                return View("_ListaUsuarioPartial", listaUsuario);
+                return PartialView("_ListaUsuarioPartial", listaUsuario);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex);
+                return BadRequest(ex.Message);
             }
 
         }
 
         public IActionResult CriarNovoUsuario()
         {
-            return View("_CriarNovoUsuarioPartial");
+            var usuario = new UsuarioDTO();
+            return View("_CadastroUsuarioPartial", usuario);
         }
 
         [HttpPost]
@@ -59,21 +62,25 @@ namespace UserList.Controllers
         {
             try
             {
-                if (usuario.Nome.Any())
+                if (usuario.Nome.Length < 3)
                     throw new Exception("Campo <strong>NOME</strong> não pode ser vazio.");
-                if (usuario.Telefone.Any())
+                if (usuario.Telefone.Length < 10)
                     throw new Exception("Campo <strong>TELEFONE</strong> não pode ser vazio.");
 
-                if(usuario.Id.HasValue)
+                if (usuario.Id.HasValue && _usuarioService.Existe((int)usuario.Id))
+                {
                     await _usuarioService.Atualizar(usuario);
+                    return Ok("Cadastro atualizado");
+                }
                 else
+                {
                     await _usuarioService.Adicionar(usuario);
-                 
-                return Ok();
+                    return Ok("Novo cadastro realizado!");
+                }
             }
             catch (Exception ex)
             {
-                return BadRequest(ex);
+                return BadRequest(ex.Message);
             }
         }
 
@@ -84,39 +91,50 @@ namespace UserList.Controllers
             {
                 if (id == null)
                 {
-                    throw new Exception("Informe um <strong>ID</strong> válido!");
+                    throw new Exception("<strong>Usuario-Id</strong> não encontrado");
                 }
 
                 var usuario = await _usuarioService.BuscaUsuario(id);
 
                 if (usuario == null)
                 {
-                    throw new Exception("Usuário não existe.");
+                    throw new Exception("<strong>Usuario</strong> não encontrado");
                 }
 
-                return View("_CriarNovoUsuarioPartial", usuario);
+                return PartialView("_CriarNovoUsuarioPartial", usuario);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                return NotFound(ex);
+                return BadRequest(ex.Message);
             }
         }
         [HttpDelete]
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
+            try
             {
-                return NotFound();
+                if (id == null)
+                {
+                    return NotFound("<strong>Usuario-Id</strong> não encontrado");
+                }
+
+                var usuario = await _usuarioService.BuscaUsuario(id);
+
+                if (usuario == null)
+                {
+                    return NotFound("<strong>Usuario</strong> não encontrado");
+                }
+
+                await _usuarioService.DeletarAsync((int)id);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
 
-            var usuario = await _context.Usuario
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (usuario == null)
-            {
-                return NotFound();
-            }
 
-            return View(usuario);
         }
 
     }
