@@ -1,38 +1,25 @@
 ﻿@using UserList.Models.DTOs;
 @model UsuarioDTO
-@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = "Cadastar Usuário";
-}
 
-<div class="row navbar-expand">
-    <div class="col-md-8">
-        <div>
-            <a href='@Url.Action("Index", "Home" )'> Home</a> > Cadastrar novo usuário
-        </div>
-        <h3><i class="fa fa-clipboard" aria-hidden="true"></i>Cadastar novo usuário</h3>
-    </div>
-</div>
-<hr />
 <div id="geral" class="container">
     <fieldset>
         <div class="row">
             <div class="col-md-4">
                 <div class="form-group">
                     <label class="control-label">Nome Completo</label>
-                    <input class="form-control" id="nomeCompleto" required size="50" placeholder="obrigatório" value=@Model.Nome/>
+                    <input class="form-control" id="nomeCompleto" required size="50" placeholder="obrigatório" value="@Model.Nome" />
                 </div>
                 <div class="form-group">
                     <label class="control-label">Apelido</label>
-                    <input class="form-control" id="apelido" size="50"  value=@Model.Apelido/>
+                    <input class="form-control" id="apelido" size="50" value="@Model.Apelido"/>
                 </div>
                 <div class="form-group">
                     <label class="control-label">Endereço</label>
-                    <input class="form-control" id="endereco" size="50"  value=@Model.Endereco/>
+                    <input class="form-control" id="endereco" size="50" value="@Model.Endereco"/>
                 </div>
                 <div class="form-group">
                     <label class="control-label">Telefone</label>
-                    <input class="form-control" id="telefone" type="tel" placeholder="(xx)xxxx-xxxx" size="15" required  value=@Model.Telefone/>
+                    <input class="form-control" id="telefone" type="tel" placeholder="(xx)xxxx-xxxx" size="15" required value="@Model.Telefone"/>
                 </div>
                 <div class="form-group">
                     <button class="btn btn-success" onclick=ValidaCampos()>SALVAR CADASTRO</button>
@@ -69,33 +56,35 @@
     }
 
     function SalvarCadastro(nome, apelido, endereco, telefone) {
-
+        let ident = "@Model.Id";
+        let dtCadastro = "@Model.DataCadastro";
+        
         $.ajax({
             url:'@Url.Action("SalvarCadastro","Usuarios")',
             type:'POST',
             data: {
-                "Id": @Model.Id,
+                "Id": ident,
                 "Nome": nome,
                 "Apelido": apelido,
                 "Endereco": endereco,
                 "Telefone": telefone,
-                "DataCadastro":@Model.DataCadastro
+                "DataCadastro": dtCadastro
             },
-            success: function () {
+            success: function (request) {
                 limpaCampos();
-                Notify('sucesso', 'Cadastro realizado!');
+                Notify('sucesso', request.responseText);
             },
-            error: function (response) {
-                Notify('erro', response.statusText);
+            error: function (request) {
+                Notify('erro', request.responseText);
             }
         });
     }
 
     function limpaCampos() {
-        $("#nomeCompleto").val() = "";
-        $("#apelido").val() = "";
-        $("#endereco").val() = "";
-        $("#telefone").val() = "";
+        $("#nomeCompleto").val('');
+        $("#apelido").val('');
+        $("#endereco").val('');
+        $("#telefone").val('');
     }
 
 </script>

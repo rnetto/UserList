@@ -1,12 +1,7 @@
 ﻿@using UserList.Models.DTOs
 @model UsuarioListaDTO
 
-@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = "Cadastar Usuário";
-}
-
-<div style="margin-top:5px">
+<div style="margin-top:10px">
     <fieldset>
         <div class="row">
             <table class="table table-striped" id="usLis">
@@ -24,7 +19,7 @@
                     @foreach (var item in Model.ListaUsuarios)
                     {
                         <tr>
-                            <td><input type="radio" id="rButton" name="fav_language" value=@item.Id></td>
+                            <td><input type="radio" id="rButton" name="rButton" value="@item.Id"></td>
                             <td>@item.Nome</td>
                             <td>@item.Apelido</td>
                             <td>@item.Endereco</td>
@@ -35,86 +30,20 @@
                 </tbody>
             </table>
             <div class="form-group">
-                <button class="btn btn-outline-info" id="detal" onclick=Detalhar()>DETALHAR</button>
                 <button class="btn btn-outline-success" id="edit" onclick=Editar()>EDITAR</button>
                 <button class="btn btn-outline-danger" id="del" onclick=Deletar()>DELETAR</button>
-            </div>
-            @if (Model.TotalPaginas > 1)
-            {
-                <div style="float:right; display:flex;">
-                    @if (Model.PagAtual > 2)
-                    {
-                        <a style="cursor:pointer;" onclick="Filtrar(@Model.PagAtual-1)"> anterior</a>
-                    }
-                    <a style="cursor:pointer;" onclick="Filtrar(@Model.PagAtual+1)"> próxima</a>
-                </div>
-            }
 
+                @if (Model.TotalPaginas > Model.ListaUsuarios.Count())
+                {
+                    <div style="float:right;" class="d-inline">
+                        @if (Model.PagAtual > 2)
+                        {
+                            <a class="d-lg-inline" style="cursor:pointer;" onclick="Filtrar(@Model.PagAtual-1)"> anterior</a>
+                        }
+                        <a class="d-lg-inline" style="cursor:pointer;" onclick="Filtrar(@Model.PagAtual+1)"> próxima</a>
+                    </div>
+                }
+            </div>
         </div>
     </fieldset>
 </div>
-
-<script>
-
-    function Editar() {
-        let id = $("#rButton").val();
-        console.log(id);
-
-        if (id > 0) {
-           $.ajax({
-                url: '@Url.Action("Editar","Usuarios")',
-                type: 'GET',
-                data: { "Id": id },
-               success: function () {
-
-               },
-               error: function (response) {
-                   Notify('erro', response.statusText);
-               }
-            });
-        }
-        else
-            Notify('atencao', 'Selecione um usuário para editar.');
-    }
-
-    function Detalhar() {
-        let id = $("#rButton").val();
-            console.log(id);
-        if (id > 0) {
-            $.ajax({
-                url: '@Url.Action("Detalhes", "Usuarios")',
-                type: 'GET',
-                data: { "Id": id },
-                success: function () {
-
-                },
-                error: function (response) {
-                    Notify('erro', response.statusText);
-                }
-            });
-        }
-        else
-            Notify('atencao', 'Selecione um usuário para ver detalhes.');
-    }
-
-    function Deletar() {
-        let id = $("#rButton").val();
-        console.log(id);
-        if (id > 0) {
-            $.ajax({
-                url: '@Url.Action("Detalhes", "Usuarios")',
-                type: 'POST',
-                data: { "Id": id },
-                success: function () {
-                    Notify('sucesso', 'Alteração realizada!')
-                },
-                error: function () {
-                    Notify('erro', response.statusText);
-                }
-            });
-        }
-        else
-            Notify('atencao', 'Selecione um usuário para apagar');
-    }
-
-</script>

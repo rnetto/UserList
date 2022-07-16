@@ -7,8 +7,8 @@
     <div>
         <h1>Lista de Usuários</h1>
         <div>
-            <a href='@Url.Action("Index", "Home" )'> Home</a> > Lista de Usuários
-        </div>        
+            <a href='@Url.Action("Index", "Home" )'> Home</a>
+        </div>
     </div>
 </div>
 <div>
@@ -18,7 +18,7 @@
 <div id="filtro" class="container">
     <div class="row">
         <div class="col-xs-12">
-            <a class="btn btn-group-toggle" aria-expanded="true" role="button" data-toggle="collapse" href="#form" ><strong>FILTROS</strong></a>
+            <a class="btn btn-group-toggle" aria-expanded="true" role="button" data-toggle="collapse" href="#form"><strong>FILTROS</strong></a>
         </div>
     </div>
 
@@ -72,6 +72,12 @@
 <script>
 
     function Filtrar(skp, tak) {
+        let nome = $("#nomeF").val();
+        let apelido = $("#apelidoF").val();
+        let endereco = $("#enderecoF").val();
+        let telefone = $("#telefoneF").val();
+        let dtInicioF = $("#dtInicioF").val();
+        let dtFimF = $("#dtFimF").val();
 
         $.ajax({
             url:'@Url.Action("Filtrar","Usuarios")',
@@ -84,16 +90,62 @@
                 "DtInicioF": dtInicioF,
                 "DtFimF": dtFimF,
                 "skip": skp,
-                "take": Take
+                "take": tak
             },
             success: function (response) {
                 Notify('sucesso', 'Exibindo resultados...');
-
+                $("#listUser").html(response);
+                $("#form").removeClass();
+                $("#form").addClass("collapse");
             },
-            error: function (response) {
-                Notify('erro', response.statusText);
+            error: function (request) {
+                Notify('erro', request.responseText);
             }
         });
+    }
+
+    function Editar() {
+        let id = $("input[name='rButton']:checked").val();
+
+        console.log(id);
+
+        if (id > 0) {
+           $.ajax({
+                url: '@Url.Action("Editar","Usuarios")',
+                type: 'GET',
+               data: { "Id": id },
+               success: function (response) {
+                   $("#listUser").html(response);
+               },
+               error: function (request) {
+                   Notify('erro', request.responseText);
+               }
+           });
+        }
+        else
+            Notify('alerta', 'Selecione um usuário para editar.');
+    }
+
+    function Deletar() {
+        let id = $("input[name='rButton']:checked").val();
+
+        if (id > 0) {
+            $.ajax({
+                url: '@Url.Action("Deletar", "Usuarios")',
+                type: 'DELETE',
+                data: { "Id": id },
+                success: function (request) {
+                    Notify('sucesso', request.responseText);
+
+                    Filtrar(0, 10);
+                },
+                error: function (request) {
+                    Notify('erro', request.responseText);
+                }
+            });
+        }
+        else
+            Notify('alerta', 'Selecione um usuário para apagar');
     }
 
 </script>
