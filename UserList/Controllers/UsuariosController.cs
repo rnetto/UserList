@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using UserList.Data;
-using UserList.Models;
 using UserList.Models.DTOs;
 using UserList.Service;
 
@@ -15,7 +11,6 @@ namespace UserList.Controllers
     {
         private readonly UserListContext _context;
         private readonly UsuariosService _usuarioService;
-
 
         public UsuariosController(UserListContext context)
         {
@@ -35,11 +30,6 @@ namespace UserList.Controllers
             {
                 take = take > 30 ? take = 30 : take;
 
-                usuarioDTO.Nome = usuarioDTO.Nome == null ? usuarioDTO.Nome = "" : usuarioDTO.Nome;
-                usuarioDTO.Apelido = usuarioDTO.Apelido == null ? usuarioDTO.Apelido = "" : usuarioDTO.Apelido;
-                usuarioDTO.Telefone = usuarioDTO.Telefone == null ? usuarioDTO.Telefone = "" : usuarioDTO.Telefone;
-                usuarioDTO.Endereco = usuarioDTO.Endereco == null ? usuarioDTO.Endereco = "" : usuarioDTO.Endereco;
-
                 var listaUsuario = await _usuarioService.BuscarLista(usuarioDTO, skip, take);
 
                 return PartialView("_ListaUsuarioPartial", listaUsuario);
@@ -48,7 +38,6 @@ namespace UserList.Controllers
             {
                 return BadRequest(ex.Message);
             }
-
         }
 
         public IActionResult CriarNovoUsuario()
@@ -58,23 +47,23 @@ namespace UserList.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SalvarCadastro(UsuarioDTO usuario)
+        public async Task<IActionResult> SalvarCadastro(UsuarioDTO usuarioDTO)
         {
             try
             {
-                if (usuario.Nome.Length < 3)
+                if (usuarioDTO.Nome.Length < 3)
                     throw new Exception("Campo <strong>NOME</strong> não pode ser vazio.");
-                if (usuario.Telefone.Length < 10)
+                if (usuarioDTO.Telefone.Length < 10)
                     throw new Exception("Campo <strong>TELEFONE</strong> não pode ser vazio.");
 
-                if (usuario.Id.HasValue && _usuarioService.Existe((int)usuario.Id))
+                if (usuarioDTO.Id.HasValue && _usuarioService.Existe((int)usuarioDTO.Id))
                 {
-                    await _usuarioService.Atualizar(usuario);
+                    await _usuarioService.Atualizar(usuarioDTO);
                     return Ok("Cadastro atualizado");
                 }
                 else
                 {
-                    await _usuarioService.Adicionar(usuario);
+                    await _usuarioService.Adicionar(usuarioDTO);
                     return Ok("Novo cadastro realizado!");
                 }
             }
@@ -101,7 +90,7 @@ namespace UserList.Controllers
                     throw new Exception("<strong>Usuario</strong> não encontrado");
                 }
 
-                return PartialView("_CriarNovoUsuarioPartial", usuario);
+                return PartialView("_CadastroUsuarioPartial", usuario);
             }
             catch (Exception ex)
             {
@@ -125,9 +114,9 @@ namespace UserList.Controllers
                     return NotFound("<strong>Usuario</strong> não encontrado");
                 }
 
-                await _usuarioService.DeletarAsync((int)id);
+                await _usuarioService.Deletar((int)id);
 
-                return Ok();
+                return Ok("Cadastro cancelado.");
             }
             catch (Exception ex)
             {
@@ -136,6 +125,5 @@ namespace UserList.Controllers
 
 
         }
-
     }
 }

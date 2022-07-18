@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UserList.Data;
@@ -17,111 +16,51 @@ namespace UserList.Service
             _context = context;
         }
         internal async Task<UsuarioListaDTO> BuscarLista(UsuarioDTO user, int skip, int take)
-        {
-            var cont = await _context.Usuario.AsNoTracking().ToListAsync();
-            var total = 0;
-            var query = new List<Usuario>();
+        {          
+            var totalPag = await (from us in _context.Usuario
+                            where (user.Nome == null || us.Nome.Contains(user.Nome))
+                            && (user.Apelido == null || us.Apelido.Contains(user.Apelido))
+                            && (user.Telefone == null || us.Telefone.Contains(user.Telefone))
+                            && (user.Endereco == null || us.Endereco.Contains(user.Endereco))
+                            && (user.DtInicioF == null || us.DataCadastro >= user.DtInicioF)
+                            && (user.DtFimF == null || us.DataCadastro <= user.DtFimF)
+                            select 1 ).CountAsync();
 
-            if (user.DtInicioF.HasValue && !user.DtFimF.HasValue)
-            {
-                total = cont.Count(us => us.Nome.Contains(user.Nome)
-                        && us.Apelido.Contains(user.Apelido)
-                        && us.Telefone.Contains(user.Telefone)
-                        && us.Endereco.Contains(user.Endereco)
-                        && us.DataCadastro >= user.DtInicioF);
-
-                query = await _context.Usuario
-                    .Where(us => us.Nome.Contains(user.Nome)
-                        && us.Apelido.Contains(user.Apelido)
-                        && us.Telefone.Contains(user.Telefone)
-                        && us.Endereco.Contains(user.Endereco)
-                        && us.DataCadastro >= user.DtInicioF)
-                    .AsNoTracking()
-                    .Skip(skip)
-                    .Take(take)
-                    .ToListAsync();
-            }
-            else if (!user.DtInicioF.HasValue && user.DtFimF.HasValue)
-            {
-                total = cont.Count(us => us.Nome.Contains(user.Nome)
-                        && us.Apelido.Contains(user.Apelido)
-                        && us.Telefone.Contains(user.Telefone)
-                        && us.Endereco.Contains(user.Endereco)
-                        && us.DataCadastro <= user.DtFimF);
-
-                query = await _context.Usuario
-                    .Where(us => us.Nome.Contains(user.Nome)
-                        && us.Apelido.Contains(user.Apelido)
-                        && us.Telefone.Contains(user.Telefone)
-                        && us.Endereco.Contains(user.Endereco)
-                        && us.DataCadastro <= user.DtFimF)
-                    .AsNoTracking()
-                    .Skip(skip)
-                    .Take(take)
-                    .ToListAsync();
-            }
-            else if (user.DtInicioF.HasValue && user.DtFimF.HasValue)
-            {
-                total = cont.Count(us => us.Nome.Contains(user.Nome)
-                                        && us.Apelido.Contains(user.Apelido)
-                                        && us.Telefone.Contains(user.Telefone)
-                                        && us.Endereco.Contains(user.Endereco)
-                                        && us.DataCadastro >= user.DtInicioF
-                                        && us.DataCadastro <= user.DtFimF);
-
-                query = await _context.Usuario
-                    .Where(us => us.Nome.Contains(user.Nome)
-                        && us.Apelido.Contains(user.Apelido)
-                        && us.Telefone.Contains(user.Telefone)
-                        && us.Endereco.Contains(user.Endereco)
-                        && us.DataCadastro >= user.DtInicioF
-                        && us.DataCadastro <= user.DtFimF)
-                    .AsNoTracking()
-                    .Skip(skip)
-                    .Take(take)
-                    .ToListAsync();
-            }
-            else
-            {
-                total = cont.Count(us => us.Nome.Contains(user.Nome)
-                        && us.Apelido.Contains(user.Apelido)
-                        && us.Telefone.Contains(user.Telefone)
-                        && us.Endereco.Contains(user.Endereco));
-
-                query = await _context.Usuario
-                    .Where(us => us.Nome.Contains(user.Nome)
-                        && us.Apelido.Contains(user.Apelido)
-                        && us.Telefone.Contains(user.Telefone)
-                        && us.Endereco.Contains(user.Endereco))
-                    .AsNoTracking()
-                    .Skip(skip)
-                    .Take(take)
-                    .ToListAsync();
-            }
+            var listaUsuario = await (from us in _context.Usuario
+                                where (user.Nome == null || us.Nome.Contains(user.Nome))
+                                && (user.Apelido == null || us.Apelido.Contains(user.Apelido))
+                                && (user.Telefone == null || us.Telefone.Contains(user.Telefone))
+                                && (user.Endereco == null || us.Endereco.Contains(user.Endereco))
+                                && (user.DtInicioF == null || us.DataCadastro >= user.DtInicioF)
+                                && (user.DtFimF == null || us.DataCadastro <= user.DtFimF)
+                                orderby us.Nome, us.DataCadastro
+                                select new UsuarioDTO
+                                {
+                                    Id = us.Id,
+                                    Nome = us.Nome,
+                                    Apelido = us.Apelido,
+                                    Telefone = us.Telefone,
+                                    Endereco = us.Endereco,
+                                    DataCadastro = us.DataCadastro
+                                })
+                                .AsNoTracking()
+                                .Skip(skip)
+                                .Take(take)
+                                .ToListAsync();
 
             var retorno = new UsuarioListaDTO()
             {
-                ListaUsuarios = query,
-                TotalPaginas = total,
+                ListaUsuarios = listaUsuario,
+                TotalPaginas = totalPag,
                 PagAtual = skip
             };
 
             return retorno;
         }
 
-        internal bool Existe(int id)
-        {
-            var usuario = _context.Usuario.FirstOrDefault(x => x.Id == id);
-
-            if (usuario == null)
-                return false;
-            else
-                return true;
-        }
-
         internal async Task<UsuarioDTO> BuscaUsuario(int? id)
         {
-            var usuario = await _context.Usuario.FirstOrDefaultAsync(x => x.Id == id);
+            var usuario = await _context.Usuario.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
 
             var user = new UsuarioDTO()
             {
@@ -160,11 +99,21 @@ namespace UserList.Service
             user.Endereco = usuario.Endereco;
             user.Telefone = usuario.Telefone;
             user.DataCadastro = (DateTime)usuario.DataCadastro;
-            
+
             await _context.SaveChangesAsync();
         }
 
-        internal async Task DeletarAsync(int id)
+        internal bool Existe(int id)
+        {
+            var usuario = _context.Usuario.AsNoTracking().FirstOrDefault(x => x.Id == id);
+
+            if (usuario == null)
+                return false;
+            else
+                return true;
+        }
+        
+        internal async Task Deletar(int id)
         {
             var user = await _context.Usuario.FirstOrDefaultAsync(x => x.Id == id);
 

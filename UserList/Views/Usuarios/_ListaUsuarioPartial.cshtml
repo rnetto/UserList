@@ -1,5 +1,9 @@
 ﻿@using UserList.Models.DTOs
 @model UsuarioListaDTO
+@{
+    ViewData["Title"] = "Tabela de usuários";
+}
+<h2>@ViewData["Title"]</h2>
 
 <div style="margin-top:10px">
     <fieldset>
@@ -16,34 +20,65 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model.ListaUsuarios)
+                    @if (Model.ListaUsuarios.Count() < 1)
                     {
                         <tr>
-                            <td><input type="radio" id="rButton" name="rButton" value="@item.Id"></td>
-                            <td>@item.Nome</td>
-                            <td>@item.Apelido</td>
-                            <td>@item.Endereco</td>
-                            <td>@item.Telefone</td>
-                            <td>@item.DataCadastro.ToShortDateString()</td>
+                            <i>Não há usuários cadastrados.</i>
                         </tr>
+                    }
+                    else
+                    {
+                        foreach (var item in Model.ListaUsuarios)
+                        {
+                            <tr>
+                                <td><input type="radio" id="rButton" name="rButton" value="@item.Id"></td>
+                                <td>@item.Nome</td>
+                                <td>@item.Apelido</td>
+                                <td>@item.Endereco</td>
+                                <td>@item.Telefone</td>
+                                <td>@Convert.ToDateTime(item.DataCadastro).ToShortDateString()</td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>
-            <div class="form-group">
-                <button class="btn btn-outline-success" id="edit" onclick=Editar()>EDITAR</button>
-                <button class="btn btn-outline-danger" id="del" onclick=Deletar()>DELETAR</button>
-
-                @if (Model.TotalPaginas > Model.ListaUsuarios.Count())
-                {
-                    <div style="float:right;" class="d-inline">
-                        @if (Model.PagAtual > 2)
-                        {
-                            <a class="d-lg-inline" style="cursor:pointer;" onclick="Filtrar(@Model.PagAtual-1)"> anterior</a>
-                        }
-                        <a class="d-lg-inline" style="cursor:pointer;" onclick="Filtrar(@Model.PagAtual+1)"> próxima</a>
-                    </div>
-                }
-            </div>
         </div>
+        @if (Model.ListaUsuarios.Count() > 0)
+        {
+            <div class="container">
+                <div class="row justify-content-between">
+                    <div class="col-4">
+                        <button class="btn btn btn-outline-success" id="edit" onclick=Editar()>EDITAR</button>
+                        <button class="btn btn btn-outline-danger" id="del" onclick=Deletar()>DELETAR</button>
+                    </div>
+                    <div class="col-4">
+                        @if (Model.TotalPaginas > Model.ListaUsuarios.Count())
+                        {
+                            @if (Model.PagAtual > 2)
+                            {
+                                <button class="btn-sm btn-dark" id="del" onclick=contaPagina('a')>ANTERIOR</button>
+                            }
+                            <button class="btn-sm btn-dark" id="del" onclick=contaPagina('p')>PRÓXIMA</button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
     </fieldset>
 </div>
+
+<script>
+    function contaPagina(x) {
+        let pagAtual = "@Model.PagAtual";
+        let totalItem = "@Model.ListaUsuarios.Count()";
+
+        if (pagAtual == 0 || totalItem < 1)
+            return;
+
+        if (x == 'a')
+            Filtrar((pagAtual - 1) * totalItem);
+        else if (x == 'p')
+            Filtrar(pagAtual * totalItem);
+    }
+</script>

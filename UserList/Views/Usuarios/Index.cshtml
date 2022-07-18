@@ -1,83 +1,99 @@
 ﻿
 @{
-    ViewData["Title"] = "Lista cadastros";
+    ViewData["Title"] = "Usuários";
 }
 
-<div class="toast-header">
-    <div>
-        <h1>Lista de Usuários</h1>
+
+<div class="container-fluid">
+    <div class="toast-header">
         <div>
-            <a href='@Url.Action("Index", "Home" )'> Home</a>
+            <h1>@ViewData["Title"]</h1>
+            <div>
+                <a href='@Url.Action("Index", "Home" )'> Página inicial</a>
+            </div>
         </div>
     </div>
-</div>
-<div>
-    <a class="btn btn-outline-primary" href="/Usuarios/CriarNovoUsuario">Cadastrar novo usuario</a>
-</div>
-<hr />
-<div id="filtro" class="container">
-    <div class="row">
-        <div class="col-xs-12">
-            <a class="btn btn-group-toggle" aria-expanded="true" role="button" data-toggle="collapse" href="#form"><strong>FILTROS</strong></a>
-        </div>
+    <div style="margin-top:15px">
+        <a class="btn-lg btn-outline-primary" href="/Usuarios/CriarNovoUsuario">Cadastrar novo usuario</a>
     </div>
+    <hr />
+    <div id="filtro" class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <a class="btn btn-group-toggle" aria-expanded="true" role="button" data-toggle="collapse" href="#form"><strong>FILTROS</strong></a>
+            </div>
+        </div>
 
-    <fieldset id="form" class="collapse show">
-        <div class="col-xs-auto">
-            <div class="col-xl-auto">
-
-                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
-                    <div class="form-group">
-                        <label>Nome</label>
-                        <input id="nomeF" type="text" name="nomeF" class="form-control" />
+        <fieldset id="form" class="collapse show">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-sm-12 col-md-12 col-lg-4 col-xl-4">
+                        <div class="form-group">
+                            <label>Nome</label>
+                            <input id="nomeF" type="text" name="nomeF" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label>Apelido</label>
+                            <input id="apelidoF" type="text" name="apelidoF" class="form-control" />
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Apelido</label>
-                        <input id="apelidoF" type="text" name="apelidoF" class="form-control" />
+                    <div class="col-sm-12 col-md-12 col-lg-4 col-xl-4">
+                        <div class="form-group">
+                            <label>Endereco</label>
+                            <input id="enderecoF" type="text" name="enderecoF" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label>Telefone</label>
+                            <input id="telefoneF" type="text" name="telefoneF" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-12 col-lg-4 col-xl-4">
+                        <div class="form-group">
+                            <label>Data cadastro início</label>
+                            <input id="dtInicioF" type="date" name="dtInicioF" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label>Data cadastro fim</label>
+                            <input id="dtFimF" type="date" name="dtFimF" class="form-control" />
+                        </div>
                     </div>
                 </div>
-
-                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
-                    <div class="form-group">
-                        <label>Endereco</label>
-                        <input id="enderecoF" type="text" name="enderecoF" class="form-control" />
+                <div class="row justify-content-between">
+                    <div class="col-4">
+                        <button onclick="Filtrar()" id="btnFiltrar" class="btn btn-primary">Filtrar</button>
                     </div>
-                    <div class="form-group">
-                        <label>Telefone</label>
-                        <input id="telefoneF" type="text" name="telefoneF" class="form-control" />
-                    </div>
-                </div>
-
-                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12">
-                    <div class="form-group">
-                        <label>Data cadastro início</label>
-                        <input id="dtInicioF" type="date" name="dtInicioF" class="form-control" />
-                    </div>
-                    <div class="form-group">
-                        <label>Data cadastro fim</label>
-                        <input id="dtFimF" type="date" name="dtFimF" class="form-control" />
+                    <div class="col-4">
+                        <label for="takePag">Itens por página: </label>
+                        <select name="takePag" id="takePag">
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                        </select>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-xs-12">
-            <div class="btn-group align-self-lg-auto">
-                <button onclick="Filtrar()" id="btnFiltrar" class="btn btn-primary">Filtrar</button>
-            </div>
-        </div>
-    </fieldset>
-</div>
-<div id="listUser"></div>
+        </fieldset>
 
+    </div>
+    <div class="container-fluid" id="listUser" style="margin-top:15px"></div>
+</div>
 <script>
 
-    function Filtrar(skp, tak) {
+    function Filtrar(p) {
         let nome = $("#nomeF").val();
         let apelido = $("#apelidoF").val();
         let endereco = $("#enderecoF").val();
         let telefone = $("#telefoneF").val();
         let dtInicioF = $("#dtInicioF").val();
         let dtFimF = $("#dtFimF").val();
+        let skp = 0;
+
+        if (p == null)
+            skp = 0;
+        else
+            skp = p;
+
+        let tak = $('#takePag').val();
 
         $.ajax({
             url:'@Url.Action("Filtrar","Usuarios")',
@@ -107,8 +123,6 @@
     function Editar() {
         let id = $("input[name='rButton']:checked").val();
 
-        console.log(id);
-
         if (id > 0) {
            $.ajax({
                 url: '@Url.Action("Editar","Usuarios")',
@@ -131,13 +145,12 @@
 
         if (id > 0) {
             $.ajax({
-                url: '@Url.Action("Deletar", "Usuarios")',
+                url: '@Url.Action("Delete", "Usuarios")',
                 type: 'DELETE',
                 data: { "Id": id },
-                success: function (request) {
-                    Notify('sucesso', request.responseText);
-
-                    Filtrar(0, 10);
+                success: function (response) {
+                    Notify('sucesso', response);
+                    setTimeout(function () { Filtrar(0, 10) }, 2000);
                 },
                 error: function (request) {
                     Notify('erro', request.responseText);
