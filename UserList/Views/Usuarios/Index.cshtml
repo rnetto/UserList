@@ -1,0 +1,164 @@
+﻿
+@{
+    ViewData["Title"] = "Usuários";
+}
+
+
+<div class="container-fluid">
+    <div class="toast-header">
+        <div>
+            <h1>@ViewData["Title"]</h1>
+            <div>
+                <a href='@Url.Action("Index", "Home" )'> Página inicial</a>
+            </div>
+        </div>
+    </div>
+    <div style="margin-top:15px">
+        <a class="btn-lg btn-outline-primary" href="/Usuarios/CriarNovoUsuario">Cadastrar novo usuario</a>
+    </div>
+    <hr />
+    <div id="filtro" class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <a class="btn btn-group-toggle" aria-expanded="true" role="button" data-toggle="collapse" href="#form"><strong>FILTROS</strong></a>
+            </div>
+        </div>
+
+        <fieldset id="form" class="collapse show">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-sm-12 col-md-12 col-lg-4 col-xl-4">
+                        <div class="form-group">
+                            <label>Nome</label>
+                            <input id="nomeF" type="text" name="nomeF" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label>Apelido</label>
+                            <input id="apelidoF" type="text" name="apelidoF" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-12 col-lg-4 col-xl-4">
+                        <div class="form-group">
+                            <label>Endereco</label>
+                            <input id="enderecoF" type="text" name="enderecoF" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label>Telefone</label>
+                            <input id="telefoneF" type="text" name="telefoneF" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="col-sm-12 col-md-12 col-lg-4 col-xl-4">
+                        <div class="form-group">
+                            <label>Data cadastro início</label>
+                            <input id="dtInicioF" type="date" name="dtInicioF" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label>Data cadastro fim</label>
+                            <input id="dtFimF" type="date" name="dtFimF" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-between">
+                    <div class="col-4">
+                        <button onclick="Filtrar()" id="btnFiltrar" class="btn btn-primary">Filtrar</button>
+                    </div>
+                    <div class="col-4">
+                        <label for="takePag">Itens por página: </label>
+                        <select name="takePag" id="takePag">
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+    </div>
+    <div class="container-fluid" id="listUser" style="margin-top:15px"></div>
+</div>
+<script>
+
+    function Filtrar(p) {
+        let nome = $("#nomeF").val();
+        let apelido = $("#apelidoF").val();
+        let endereco = $("#enderecoF").val();
+        let telefone = $("#telefoneF").val();
+        let dtInicioF = $("#dtInicioF").val();
+        let dtFimF = $("#dtFimF").val();
+        let skp = 0;
+
+        if (p == null)
+            skp = 0;
+        else
+            skp = p;
+
+        let tak = $('#takePag').val();
+
+        $.ajax({
+            url:'@Url.Action("Filtrar","Usuarios")',
+            type:'GET',
+            data:{
+                "Nome": nome,
+                "Apelido": apelido,
+                "Endereco": endereco,
+                "Telefone": telefone,
+                "DtInicioF": dtInicioF,
+                "DtFimF": dtFimF,
+                "skip": skp,
+                "take": tak
+            },
+            success: function (response) {
+                Notify('sucesso', 'Exibindo resultados...');
+                $("#listUser").html(response);
+                $("#form").removeClass();
+                $("#form").addClass("collapse");
+            },
+            error: function (request) {
+                Notify('erro', request.responseText);
+            }
+        });
+    }
+
+    function Editar() {
+        let id = $("input[name='rButton']:checked").val();
+
+        if (id > 0) {
+           $.ajax({
+                url: '@Url.Action("Editar","Usuarios")',
+                type: 'GET',
+               data: { "Id": id },
+               success: function (response) {
+                   $("#listUser").html(response);
+               },
+               error: function (request) {
+                   Notify('erro', request.responseText);
+               }
+           });
+        }
+        else
+            Notify('alerta', 'Selecione um usuário para editar.');
+    }
+
+    function Deletar() {
+        let id = $("input[name='rButton']:checked").val();
+
+        if (id > 0) {
+            $.ajax({
+                url: '@Url.Action("Delete", "Usuarios")',
+                type: 'DELETE',
+                data: { "Id": id },
+                success: function (response) {
+                    Notify('sucesso', response);
+                    setTimeout(function () { Filtrar(0, 10) }, 2000);
+                },
+                error: function (request) {
+                    Notify('erro', request.responseText);
+                }
+            });
+        }
+        else
+            Notify('alerta', 'Selecione um usuário para apagar');
+    }
+
+</script>

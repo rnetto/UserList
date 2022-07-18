@@ -11,23 +11,22 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">UserList</a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Página inicial</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Usuarios" asp-action="Index">Usuários</a>
+                        </li>                        
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Contato/Objetivo</a>
+                        </li>                        
                     </ul>
                 </div>
             </div>
         </nav>
+        <div id="NotificacaoDiv" style="float:right; display:flex;display:none"></div>
     </header>
     <div class="container">
         <main role="main" class="pb-3">
@@ -44,5 +43,28 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+<script>
+    function Notify(tipo, mensagem) {
+        let title = "";
+        let fechaDiv = '<a href="#" class="close" data-dismiss="alert" aria-hidden="true">×</a><p>';
+
+        if (tipo == 'sucesso') {
+            title = '<strong>Sucesso! </strong>';
+            $('#NotificacaoDiv').addClass('alert alert-success');
+        }
+        else if (tipo == 'alerta') {
+            title = '<strong>Atencao! </strong>';
+            $('#NotificacaoDiv').addClass('alert alert-warning');
+        }
+        else if (tipo == 'erro') {
+            title = '<strong>Erro! </strong>';
+            $('#NotificacaoDiv').addClass('alert alert-danger');
+        }
+
+        $('#NotificacaoDiv').show();
+        $("#NotificacaoDiv").html(fechaDiv + title + mensagem);
+        setTimeout(function () { $('#NotificacaoDiv').hide() }, 5000);
+    }
+</script>
 </body>
 </html>
